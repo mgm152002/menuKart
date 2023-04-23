@@ -108,7 +108,7 @@ app.get('/signup',function(req,res){
     res.send("this is signup")
 })
 app.get('/login',function(req,res){
-    res.send("this is login")
+    res.render("login")
 })
 
 
@@ -178,7 +178,7 @@ app.post("/login",async function(req,res){
                     maxAge: 60 * 60 // 1 hour
                 });
                   res.setHeader('Set-Cookie', setCookie);//used to send cookie to client
-                res.send("signed in")
+                res.redirect("/adminmenu")
             }
             else if(result==false){
                 res.send("password incorrect");
@@ -198,21 +198,24 @@ app.post('/addMenu',async function(req,res){
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
+        const found=await hotelModel.findOne({_id:decoded.user_id})
         const menus=new menuModel({
             itemname:req.body.itemname,
             price:req.body.price
           })
     
           try{
-            await menus.save()
-            res.json(menus)
+            found.hotelMenu.push(menus)
+            await found.save()
+            res.redirect("/adminmenu")
+        
           }
           catch(err){
             res.json(err)
           }
        }
        else{
-        res.json("need authentication")
+        res.redirect("/login")
        }
       });
 
@@ -222,18 +225,26 @@ app.post('/addMenu',async function(req,res){
 
 })
 
-app.patch('/addMenu/:id',async function(req,res){
+app.post('/addMenu/:id',async function(req,res){
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
         try{
-        
-        const filter = { _id: req.params.id};
-        const update = { itemname:req.body.itemname,price:req.body.price};
-        const doc=await menuModel.findOneAndUpdate(filter, update, {
-            new: true
-          });
-          res.json(doc)
+        const doc=await hotelModel.findOne({_id:decoded.user_id})
+        let ind=-1
+        for(let i=0;i<doc.hotelMenu.length;i++)
+        {
+            if(doc.hotelMenu[i]._id==req.params.id)
+            {
+                ind=i;
+                break
+            }
+
+        }
+        doc.hotelMenu[ind].itemname=req.body.itemname
+        doc.hotelMenu[ind].price=req.body.price
+        await doc.save()
+        res.redirect("/adminmenu")
         }
         catch(err){
             res.json(err)
@@ -252,15 +263,16 @@ app.patch('/addMenu/:id',async function(req,res){
 
 
 })
-app.delete('/addMenu/:id',async function(req,res){
+app.post('/delMenu/:id',async function(req,res){
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
         try{
         
-        const filter = { _id: req.params.id};
-        const deleted=await menuModel.findOneAndDelete(filter)
-          res.json("deleted sucessfully")
+            const filter={_id:decoded.user_id}
+            const update={$pull:{hotelMenu:{_id:req.params.id}}}
+            const up= await hotelModel.findOneAndUpdate(filter,update,{new:true})
+          res.redirect("/adminmenu")
         }
         catch(err){
             res.json(err)
@@ -429,7 +441,7 @@ console.log(result)
 
 
 
-app.post('/orderdone/:id', async (req, res) => {
+app.get('/orderdone/:id', async (req, res) => {
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
         if(!err){
@@ -462,7 +474,7 @@ app.post('/orderdone/:id', async (req, res) => {
 find.currentOrders.splice(ind, 1);
 await find.save();
     // Save changes to the database and delete that order from the currentorders array
-    
+    res.redirect("/adminorders")
   
     // res.send('Hotel updated');
         }
@@ -471,6 +483,94 @@ await find.save();
         }
     })
   });
+  app.get("/adminmenu",async function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
+        if(!err){
+
+        var found=await hotelModel.findOne({_id:decoded.user_id})
+        var menu=found.hotelMenu
+        res.render("menu",{menuItems:menu})
+        }
+        else{
+            res.send("need auth")
+        }
+
+
+
+  })
+})
+app.get("/adminorders",function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
+        if(!err){
+
+        var found=await hotelModel.findOne({_id:decoded.user_id})
+        var orders=found.currentOrders
+        res.render("orders",{orders:orders})
+        }
+        else{
+            res.send("need auth")
+        }
+
+})
+})
+app.get("/admincomplete",function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
+        if(!err){
+
+        var found=await hotelModel.findOne({_id:decoded.user_id})
+        var orders=found.completedOrders
+        res.render("completed",{orders:orders})
+        }
+        else{
+            res.send("need auth")
+        }
+
+})
+})
+app.get("/addmenu",function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
+        if(!err){
+
+        res.render("addform")
+        }
+        else{
+            res.send("need auth")
+        }
+
+})
+})
+
+app.get("/updatemenu/:id",function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
+        if(!err){
+            const doc=await hotelModel.findOne({_id:decoded.user_id})
+            let ind=-1
+            for(let i=0;i<doc.hotelMenu.length;i++)
+            {
+                if(doc.hotelMenu[i]._id==req.params.id)
+                {
+                    ind=i;
+                    break
+                }
+    
+            }
+            let upd=doc.hotelMenu[ind]
+           
+
+        res.render("updateform",{upd:upd})
+        }
+        else{
+            res.send("need auth")
+        }
+
+})
+})
+
 
 
 
