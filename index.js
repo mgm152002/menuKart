@@ -326,7 +326,8 @@ app.post("/user/:id",async function(req,res){
       
       var setCookie=cookie.serialize('jwtusertToken', token,{
         httpOnly: true,
-        maxAge: 60 * 60 // 1 hour
+        maxAge: 60 * 60, // 1 hour
+        path:'/'
     });
      res.setHeader('Set-Cookie', setCookie);//used to send cookie to client
 
@@ -351,7 +352,8 @@ else{
       
       var setCookie=cookie.serialize('jwtuserToken', token,{
         httpOnly: true,
-        maxAge: 60 * 60 // 1 hour
+        maxAge: 60 * 60,
+        path:"/" // 1 hour
     });
      res.setHeader('Set-Cookie', setCookie);//used to send cookie to client
      found.tableno=table

@@ -19,7 +19,8 @@
               <p class="card-text">Price: Rs. <%= item.price %></p>
             </div>
             <div class="card-footer">
-              <button class="btn btn-primary" onclick="addToCart('<%= item.itemname %>,<%= item.price %>')">Add to Cart</button>
+              <button class="btn btn-primary" onclick="addToCart('<%= item.itemname %>', '<%= item.price %>')"
+                >Add to Cart</button>
             </div>
           </div>
         </div>
@@ -27,21 +28,24 @@
       </div>
     </div>
     <script>
-      function addToCart(itemName,itemPrice) {
-        fetch("/addtocart", {
-  method: "POST",
-  body: JSON.stringify({
-    itemname: itemName,
-    price: itemPrice
-
-  }),
-  headers: {
-    "Content-type": "application/json; charset=UTF-8"
-  }
-})
-  .then((response) => response.json())
-  .then((json) => console.log(json));
+      function addToCart(itemName, itemPrice) {
+        console.log(itemName,itemPrice)
+  // fetch("/addtocart", {
+  //   method: "POST",
+  //   body: JSON.stringify({
+  //     itemname: itemName,
+  //     price: itemPrice
+  //   }),
+  //   headers: {
+  //     "Content-type": "application/json; charset=UTF-8"
+  //   }
+  // }).then(response => {
+  //   // handle response
+  // }).catch(error => {
+  //   // handle error
+  // });
 }
+
     </script>
   </body>
 </html>
