@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Restaurant Menu</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Restaurant Menu</h2>
+      <div class="row">
+        <% menuItems.forEach(function(item) { %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            
+            <div class="card-body">
+              <h5 class="card-title"><%= item.itemname %></h5>
+              <p class="card-text">Price: Rs. <%= item.price %></p>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-primary" onclick="addToCart('<%= item.itemname %>,<%= item.price %>')">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+    </div>
+    <script>
+      function addToCart(itemName,itemPrice) {
+        fetch("/addtocart", {
+  method: "POST",
+  body: JSON.stringify({
+    itemname: itemName,
+    price: itemPrice
+
+  }),
+  headers: {
+    "Content-type": "application/json; charset=UTF-8"
+  }
+})
+  .then((response) => response.json())
+  .then((json) => console.log(json));
+}
+    </script>
+  </body>
+</html>

@@ -93,7 +93,7 @@ const menuuser=new mongoose.Schema({
         validator: function(v) {
             return /^[6-9]{1}[0-9]{9}$/.test(v);
         },message: 'Invalid Indian phone number!'}},
-    tableno:String,
+    tableno:Number,
     cart:[Order]
 
 })
@@ -306,7 +306,7 @@ app.get('/qr',function(req,res){
 });
 
 
-app.post("/user",async function(req,res){
+app.post("/user/:id",async function(req,res){
     const{phone, table}=req.body
     const found=await menuuserModel.findOne({phone:phone})
     if(!found){
@@ -332,7 +332,7 @@ app.post("/user",async function(req,res){
 
     try{
         await user.save()
-        res.json(user)
+        res.redirect("/user/menu"+req.params.id)
         
     }
     catch(err){
@@ -354,8 +354,10 @@ else{
         maxAge: 60 * 60 // 1 hour
     });
      res.setHeader('Set-Cookie', setCookie);//used to send cookie to client
+     found.tableno=table
+     await found.save()
 
-    res.redirect('/addtocart')
+    res.send(found.phone)
 }
 
 })
@@ -371,7 +373,7 @@ app.post('/addtocart', (req, res) => {
         price:price,
         
     })
-    const filter={phone:decoded.phone}
+    const filter={_id:decoded.user_id}
     const update = { $push: { cart: userOrder } };
     const finduser=await menuuserModel.findOneAndUpdate(filter, update, {
         new: true
@@ -569,6 +571,26 @@ app.get("/updatemenu/:id",function(req,res){
         }
 
 })
+})
+app.get("/user/:id",function(req,res){
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtuserToken,process.env.TOKEN_KEY, async function(err, decoded) {
+       if(!err){
+        res.redirect("/user/menu/"+req.params.id)
+       }
+       else{
+        res.render("userform",{id:req.params.id});
+
+       }
+
+
+})
+})
+app.get("/user/menu/:id",async function(req,res){
+    const docs = await hotelModel.findOne({_id:req.params.id})
+    const menuItems=docs.hotelMenu
+    res.render("usermenu",{menuItems:menuItems})
+
 })
 
 
