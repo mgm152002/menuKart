@@ -1,4 +1,6 @@
 const ejs=require('ejs');
+const qrCode = require('qrcode');
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const app=express();
@@ -21,9 +23,9 @@ app.use(session({
   }));
 
 
-const mongoURI="mongodb://localhost:27017/menukart";
+// const mongoURI="mongodb://localhost:27017/menukart";
 try{
-    mongoose.connect(mongoURI);
+    mongoose.connect(process.env.Mongo);
     console.log("Connected to database");
 
 }
@@ -105,10 +107,13 @@ const menuModel=new mongoose.model("menu",menu)
 const menuuserModel=new mongoose.model("menuuser",menuuser)
 
 app.get('/signup',function(req,res){
-    res.send("this is signup")
+    res.render("signup")
 })
 app.get('/login',function(req,res){
     res.render("login")
+})
+app.get("/",function(req,res){
+    res.render("home")
 })
 
 
@@ -137,7 +142,7 @@ app.post("/signup",async function(req,res){
 
         try{
             await user.save()
-            res.send("account created");
+            res.redirect("/adminmenu")
            
             
         }
@@ -291,13 +296,22 @@ app.post('/delMenu/:id',async function(req,res){
 
 
 })
-app.get('/qr',function(req,res){
+app.get('/qr',async function(req,res){
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
-    const qrPng = qr.image('I love QR!', { type: 'png' });
-    res.setHeader('Content-Type', 'image/png');
-    qrPng.pipe(res);
+    
+        const baseUrl = req.protocol + '://' + req.get('host')+'/user/'+decoded.user_id;
+const currentUrl = baseUrl + req.originalUrl.replace('/qr', '');
+
+         // The data to encode in the QR code
+        qrCode.toDataURL(currentUrl, (err, url) => {
+          if (err) {
+            console.error(err);
+            return res.sendStatus(500);
+          }
+          res.render('qr', { qrdata: url }); // Pass the generated data URL to the EJS view
+        });
        }
        else{
         res.json('need authentication')
@@ -333,7 +347,7 @@ app.post("/user/:id",async function(req,res){
 
     try{
         await user.save()
-        res.redirect("/user/menu"+req.params.id)
+        res.redirect("/user/menu/"+req.params.id)
         
     }
     catch(err){
@@ -359,12 +373,12 @@ else{
      found.tableno=table
      await found.save()
 
-    res.send(found.phone)
+     res.redirect("/user/menu/"+req.params.id)
 }
 
 })
 
-app.post('/addtocart', (req, res) => {
+app.post('/addtocart/:id', (req, res) => {
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtuserToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
@@ -380,7 +394,8 @@ app.post('/addtocart', (req, res) => {
     const finduser=await menuuserModel.findOneAndUpdate(filter, update, {
         new: true
       });
-    res.json(`Item ${userOrder} added to your cart`);
+      res.redirect("/user/menu/"+req.params.id)
+   
        }
        else{
         res.json('no user found')
@@ -390,7 +405,7 @@ app.post('/addtocart', (req, res) => {
 
 
 
-app.post('/deletecart/:id', (req, res) => {
+app.post('/deletecart/:id/:menu', (req, res) => {
     var cookies = cookie.parse(req.headers.cookie || '');
     jwt.verify(cookies.jwtuserToken,process.env.TOKEN_KEY, async function(err, decoded) {
        if(!err){
@@ -401,7 +416,7 @@ app.post('/deletecart/:id', (req, res) => {
     const finduser=await menuuserModel.findOneAndUpdate(filter, update, {
         new: true
       });
-    res.json(`Item ${finduser} deleted to your cart`);
+    res.redirect("/user/cart/"+req.params.menu)
        }
        else{
         res.json('no user found')
@@ -430,7 +445,7 @@ app.post("/order/:id",async function(req,res){
       const fil = {phone: decoded.phone};
 const up = {$set: {cart: []}};
 const result = await menuuserModel.findOneAndUpdate(fil, up,{new:true});
-console.log(result)
+res.redirect("/user/cart/"+req.params.id)
       
 
 
@@ -591,7 +606,27 @@ app.get("/user/:id",function(req,res){
 app.get("/user/menu/:id",async function(req,res){
     const docs = await hotelModel.findOne({_id:req.params.id})
     const menuItems=docs.hotelMenu
-    res.render("usermenu",{menuItems:menuItems})
+    const docsid=docs._id
+    res.render("usermenu",{menuItems:menuItems,docsid:docsid})
+
+})
+app.get("/user/cart/:id",async function(req,res){
+    const docs = await hotelModel.findOne({_id:req.params.id})
+    const docsid=docs._id
+    var cookies = cookie.parse(req.headers.cookie || '');
+    jwt.verify(cookies.jwtuserToken,process.env.TOKEN_KEY, async function(err, decoded) {
+       if(!err){
+        const docs = await menuuserModel.findOne({_id:decoded.user_id})
+        const cart=docs.cart
+        res.render("cart",{cartItems:cart,docsid:docsid})
+       }
+       else{
+        res.json("Need auth")
+
+       }
+
+
+})
 
 })
 
@@ -604,8 +639,7 @@ app.get("/user/menu/:id",async function(req,res){
 
 
 
-
-app.listen(3000,function(err){
+app.listen(process.env.PORT||3000,function(err){
     if(!err){
         console.log("Connected sucessfully");
     }

@@ -2,25 +2,24 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Restaurant Menu</title>
+  <title>QR Code Generator</title>
   <!-- Import Bootstrap stylesheets and fonts -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
- 
 </head>
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/adminmenu">Menukart</a>
+      <a class="navbar-brand" href="/">Menukart</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/adminmenu">Menu</a>
+            <a class="nav-link" href="/adminmenu">Menu</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/adminorders">Orders</a>
@@ -32,46 +31,18 @@
       </div>
     </div>
   </nav>
-  <div class="container-fluid mt-3">
-    <div class="row">
-      <div class="col-sm-12 col-md-6 offset-md-6">
-        <div class="text-end">
-          <a href="/qr" class="btn btn-outline-secondary"><i class="fas fa-qrcode"></i> Generate QR</a>
-        </div>
-      </div>
-    </div>
-  </div>
   
   
-  <div class="container">
-    <h1>Restaurant Menu</h1>
-    <% if (menuItems.length > 0) { %>
-      <div class="row">
-        <% for (var i = 0; i < menuItems.length; i++) { %>
-          <div class="col-sm-12 col-md-6">
-            <div class="card my-3">
-              <div class="card-body">
-                <h5 class="card-title"><%= menuItems[i].itemname %></h5>
-                <p class="card-text">RS.<%= menuItems[i].price %></p>
-                <!-- Update button -->
-                <a class="btn btn-primary mb-2" href="/updatemenu/<%= menuItems[i]._id %>"><i class="fas fa-edit"></i> Update</a>
-                <!-- Delete button -->
-                <form method="post" action="/delMenu/<%= menuItems[i]._id %>">
-                  <button class="btn btn-danger" type="submit"><i class="fas fa-trash-alt"></i> Delete</button>
-
-                </form>
-                
-              </div>
-            </div>
-          </div>
-        <% } %>
+    
+    <% if (qrdata) { %>
+      <hr>
+      <h2>QR Code</h2>
+      <div class="text-center">
+        <img src="<%= qrdata %>" alt="QR Code">
       </div>
-    <% } else { %>
-      <p>No menu items found.</p>
     <% } %>
-    <!-- Add Menu Item button -->
-    <a class="btn btn-primary" href="/addmenu"><i class="fas fa-plus"></i> Add Menu Item</a>
   </div>
+  
   <!-- Import Bootstrap scripts -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>

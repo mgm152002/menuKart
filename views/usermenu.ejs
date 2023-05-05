@@ -7,45 +7,68 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
   </head>
   <body>
+    <nav  class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+      <a class="navbar-brand" href="#">Restaurant</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Menu</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/user/cart/<%= docsid %>">My Cart <i class="fas fa-shopping-cart"></i></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
     <div class="container">
-      <h2>Restaurant Menu</h2>
+      
       <div class="row">
         <% menuItems.forEach(function(item) { %>
         <div class="col-md-4 mb-4">
           <div class="card h-100">
-            
             <div class="card-body">
               <h5 class="card-title"><%= item.itemname %></h5>
               <p class="card-text">Price: Rs. <%= item.price %></p>
             </div>
             <div class="card-footer">
-              <button class="btn btn-primary" onclick="addToCart('<%= item.itemname %>', '<%= item.price %>')"
-                >Add to Cart</button>
+              <form action="/addtocart/<%= docsid %>" method="POST">
+                <input type="hidden" name="itemname" value="<%= item.itemname %>" />
+                <input type="hidden" name="price" value="<%= item.price %>" />
+                <button class="btn btn-primary" type="submit" data-toggle="modal" data-target="#addedToCartModal">Add to Cart</button>
+              </form>
             </div>
           </div>
         </div>
-        <% }); %>
+        <% }); %>\
       </div>
     </div>
-    <script>
-      function addToCart(itemName, itemPrice) {
-        console.log(itemName,itemPrice)
-  // fetch("/addtocart", {
-  //   method: "POST",
-  //   body: JSON.stringify({
-  //     itemname: itemName,
-  //     price: itemPrice
-  //   }),
-  //   headers: {
-  //     "Content-type": "application/json; charset=UTF-8"
-  //   }
-  // }).then(response => {
-  //   // handle response
-  // }).catch(error => {
-  //   // handle error
-  // });
-}
 
-    </script>
+    <!-- Added to Cart Modal -->
+    <div class="modal fade" id="addedToCartModal" tabindex="-1" role="dialog" aria-labelledby="addedToCartModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addedToCartModalLabel">Item Added to Cart!</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>The item has been added to your cart.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
   </body>
 </html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Cart</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  </head>
+  <body>
+    <nav  class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <a class="navbar-brand" href="#">Restaurant</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/user/menu/<%= docsid %>">Menu</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#">My Cart <i class="fas fa-shopping-cart"></i></a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    <div class="container">
+      <h2>My Cart</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Price</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% cartItems.forEach(function(item) { %>
+          <tr>
+            <td><%= item.itemname %></td>
+            <td>Rs. <%= item.price %></td>
+            <td>
+              <form action="/deletecart/<%= item._id %>/<%= docsid %>" method="POST">
+                <input type="hidden" name="itemname" value="<%= item.itemname %>" />
+                <input type="hidden" name="price" value="<%= item.price %>" />
+                <button class="btn btn-danger" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <form action="/order/<%= docsid %>" method="POST">
+        <div class="row justify-content-end">
+          <div class="col-sm-4">
+            <button class="btn btn-primary btn-block" type="submit">Place Order</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+  </body>
+</html>
