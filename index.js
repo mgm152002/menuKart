@@ -389,11 +389,14 @@ app.post('/addtocart/:id', (req, res) => {
         price:price,
         
     })
-    const filter={_id:decoded.user_id}
-    const update = { $push: { cart: userOrder } };
-    const finduser=await menuuserModel.findOneAndUpdate(filter, update, {
-        new: true
-      });
+    const found=await menuModel.findOne({_id:decoded.user_id})
+    found.cart.push(userOrder)
+    await found.save();
+    // const filter={_id:decoded.user_id}
+    // const update = { $push: { cart: userOrder } };
+    // const finduser=await menuuserModel.findOneAndUpdate(filter, update, {
+    //     new: true
+    //   });
       res.redirect("/user/menu/"+req.params.id)
    
        }
