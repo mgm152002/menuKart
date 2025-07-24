@@ -1,5 +1,5 @@
 # menuKart
-Web App that allows restruant owners to create online menus and accept orders from customer.
+Web App that allows restaurant  owners to create online menus and accept orders from customer.
 
 
 contributions:
